@@ -1,0 +1,52 @@
+name: terraform
+on:
+  push:
+    branches:
+      - "master"
+
+env:
+  REGION: ap-northeast-1
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  TERRAFORM_VERSION: 0.15.5
+  WEBHOOK: https://sattjp.webhook.office.com/webhookb2/b65fd0a7-58a0-4f96-b109-07ba0f9b6ad6@8c4fbddb-31dd-42ec-b709-917ff3144a77/IncomingWebhook/c968b3b55fe34bcb8db593be1c026370/7d3fc861-8da4-4895-a426-86a566ed1598
+
+jobs:
+  terraform_apply:
+    name: terraform apply
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-region: ${{ env.REGION }}
+
+    - name: Setup Terraform
+      run : |
+        sudo terraform -v
+        sudo which terraform
+        sudo rm -Rf /usr/local/bin/terraform
+        sudo wget https://releases.hashicorp.com/terraform/${{ env.TERRAFORM_VERSION }}/terraform_${{ env.TERRAFORM_VERSION }}_linux_amd64.zip
+        sudo unzip -o -d /usr/local/bin terraform_${{ env.TERRAFORM_VERSION }}_linux_amd64.zip
+        sudo terraform -v
+
+    # 変数ファイルtfvars.jsonをテンプレートファイルをもとに、githubシークレットから作成する
+    - name: terraform apply
+      working-directory: ./terraform/modules/
+      run: |
+        terraform apply -auto-approve
+
+  teams_notice:
+    if: always()
+    needs: [terraform_apply]
+    runs-on: ubuntu-latest
+    steps:
+      - name: teams webhook action
+        uses: KEI0124/saito@v2.3
+        with:
+          webhook: '${{ env.WEBHOOK }}'
+          message: '終了'
