@@ -38,10 +38,10 @@ jobs:
     - name: terraform apply
       working-directory: ./terraform/modules/
       run: |
+        terraform init
         terraform apply -auto-approve
 
   teams_notice:
-    if: always()
     needs: [terraform_apply]
     runs-on: ubuntu-latest
     steps:
