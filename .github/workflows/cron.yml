@@ -13,5 +13,7 @@ jobs:
     steps:
     - name: cron
       run: |
+        echo $TZ
         date
+        TZ=UTC-9 date
         echo "hello"
