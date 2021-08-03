@@ -1,0 +1,19 @@
+name: cron
+on:
+  schedule:
+    - cron:  '*/3 * * * *'
+  # push:
+  #   branches:
+  #     - "master"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  cron:
+    name: cron
+    runs-on: ubuntu-latest
+    steps:
+    - name: cron
+      run: |
+        echo "hello"
