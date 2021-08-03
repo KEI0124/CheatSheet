@@ -14,3 +14,4 @@ jobs:
     - name: cron
       run: |
         TZ=UTC-9 date
+        echo "hello"
